@@ -6,6 +6,7 @@ import (
 	"io"
 	"strings"
 	"testing"
+	"time"
 )
 
 const questionsOk = `"what is 1+1?",2
@@ -52,8 +53,46 @@ func TestAnswersCounters(t *testing.T) {
 				Reader: strings.NewReader(test.ans),
 				Writer: io.Discard,
 			}
-			got := Game(strings.NewReader(test.questions), term, 20)
+			got := Game(strings.NewReader(test.questions), term, time.Duration(10)*time.Second)
 			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
+func TestGameTimeout(t *testing.T) {
+	tests := []struct {
+		name string
+		in   string
+		ans  string
+		want Score
+	}{
+		{
+			"no answers in time limit",
+			questionsOk,
+			``,
+			Score{
+				Ok:     0,
+				Wrong:  2,
+				InTime: false,
+			},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			var timeout time.Duration
+			term := Terminal{
+				Reader: strings.NewReader(test.ans),
+				Writer: io.Discard,
+			}
+			switch test.want.InTime {
+			case true:
+				timeout = time.Duration(10) * time.Second
+			case false:
+				timeout = time.Duration(1) * time.Nanosecond
+			}
+			got := Game(strings.NewReader(test.in), term, timeout)
+			assert.Equal(t, test.want, got)
+
 		})
 	}
 }

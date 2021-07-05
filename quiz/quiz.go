@@ -30,7 +30,7 @@ func (s Score) String() string {
 
 //Game starts quiz with questions as 'question,answer' in CSV format and
 //counts the time limit for answering.
-func Game(questions io.Reader, input Terminal, timeout int) Score {
+func Game(questions io.Reader, input Terminal, timeout time.Duration) Score {
 	qt := loadQuestions(questions)
 	s := Score{Wrong: len(qt), InTime: true}
 	done := make(chan struct{})
@@ -41,7 +41,7 @@ func Game(questions io.Reader, input Terminal, timeout int) Score {
 	select {
 	case <-done:
 		return s
-	case <-time.After(time.Duration(timeout) * time.Second):
+	case <-time.After(timeout):
 		s.InTime = false
 		return s
 	}

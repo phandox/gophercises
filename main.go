@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"github.com/phandox/gophercises/quiz"
 	"os"
+	"time"
 )
 
 func main() {
 	qFile := flag.String("qFile", "", "file path to csv file with questions")
-	duration := flag.Int("duration", 10, "how much time before quiz ends")
+	duration := flag.Duration("duration", 10*time.Second, "how much time before quiz ends (default 10s)")
 	flag.Parse()
 
 	if len(*qFile) == 0 {
