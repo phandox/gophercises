@@ -9,16 +9,25 @@ import (
 
 func main() {
 	qFile := flag.String("qFile", "", "file path to csv file with questions")
+	duration := flag.Int("duration", 10, "how much time before quiz ends")
 	flag.Parse()
 
 	if len(*qFile) == 0 {
 		panic("path can't be empty")
 	}
+	if *duration <= 0 {
+		panic("time for quiz must be positive non-zero")
+	}
+
 	f, err := os.Open(*qFile)
 	if err != nil {
 		panic(err)
 	}
 	defer f.Close()
-	ok, wrong := quiz.Start(f, os.Stdin, os.Stdout)
-	fmt.Printf("\nQuiz results: Correct/Wrong: %d/%d", ok, wrong)
+
+	inout := quiz.Terminal{
+		Reader: os.Stdin,
+		Writer: os.Stdout,
+	}
+	fmt.Println(quiz.Game(f, inout, *duration))
 }

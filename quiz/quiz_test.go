@@ -16,30 +16,26 @@ func TestAnswersCounters(t *testing.T) {
 		name      string
 		questions string
 		ans       string
-		ansOk     int
-		ansWrong  int
+		want      Score
 	}{
 		{
 			"correct and incorrect",
 			questionsOk,
 			`2
 11`,
-			1,
-			1,
+			Score{Ok: 1, Wrong: 1, InTime: true},
 		},
 		{
 			"no answers",
 			questionsOk,
 			"",
-			0,
-			2,
+			Score{Wrong: 2, InTime: true},
 		},
 		{
 			"no questions",
 			"",
 			"",
-			0,
-			0,
+			Score{InTime: true},
 		},
 		{
 			"newline answers",
@@ -47,15 +43,17 @@ func TestAnswersCounters(t *testing.T) {
 			`
 
 `,
-			0,
-			2,
+			Score{Wrong: 2, InTime: true},
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			gotOk, gotWrong := Start(strings.NewReader(test.questions), strings.NewReader(test.ans), io.Discard)
-			assert.Equal(t, test.ansOk, gotOk)
-			assert.Equal(t, test.ansWrong, gotWrong)
+			term := Terminal{
+				Reader: strings.NewReader(test.ans),
+				Writer: io.Discard,
+			}
+			got := Game(strings.NewReader(test.questions), term, 20)
+			assert.Equal(t, test.want, got)
 		})
 	}
 }
